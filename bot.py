@@ -9,7 +9,7 @@ from aiogram.enums import ChatAction
 
 # ===== НАСТРОЙКИ =====
 
-TOKEN = os.getenv("8593782765:AAG0LDK9AJfQx2u-zs16MxYJAqJm1tEhbTg")
+TOKEN = "8593782765:AAG0LDK9AJfQx2u-zs16MxYJAqJm1tEhbTg"
 
 TRIGGERS = [
     "малышка на ночь",
