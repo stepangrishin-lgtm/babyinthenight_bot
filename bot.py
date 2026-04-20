@@ -85,8 +85,8 @@ def recall_girl(memory):
     girl = random.choice(memory["girls"])
 
     phrases = [
-        f"это напоминает мне одну малышку... {girl['score']}/10",
-        f"где-то я уже это видел... {girl['score']}/10",
+        f"это напоминает мне одну... тогда было {girl['score']}/10",
+        f"где-то я уже это видел... примерно на {girl['score']}/10",
         f"у меня есть запись похожего случая: {girl['score']}/10",
         f"не дотягивает до той... там было {girl['score']}/10",
     ]
@@ -98,12 +98,11 @@ def recall_girl(memory):
 
 def easter_egg():
     eggs = [
-        "Оценка: 47/10. Вердикт: комиссия в ахуе.",
-        "Комиссию забрали в армию. Оценок больше не будет",
-        "Так, это уже нихуя не норма. Я звоню её маме",
+        "Оценка: 47/10. Вердикт: я влюбился.",
+        "Система перегружена. Повторите малышку позже.",
+        "это незаконно быть настолько хорошим",
         "⚠️ превышен допустимый уровень малышки",
-        "у меня с ней, кстати, есть фулл",
-        "Стоп, это че Серега?",
+        "…",
     ]
     return random.choice(eggs)
 
@@ -139,8 +138,8 @@ def make_reply():
 
     verdicts = [
         "рабочий станок",
-        "норм, можно брать (но по акции)",
-        "почти как Леха",
+        "норм, можно брать",
+        "уверенный результат",
         "достойный уровень",
         "ночная смена одобряет",
     ]
@@ -159,13 +158,10 @@ def make_reply():
 
 def troll_text(name):
     variants = [
-        f"{name}, жалкое зрелище",
-        f"{name}, мозги особо не еби",
-        f"{name}, хоспаде, ты опять здесь",
-        f"{name}, ты как из палаты вылез?",
-        f"{name}, а может мне тут кожаный не сидеть нахуй и рэп не исполнять?",
-        f"{name}, еще одно такое выражение, и я звоню ментам",
-        f"{name}, был бы ты малышкой, я б тебя продегустировал",
+        f"{name}, тебе это не поможет",
+        f"{name}, не старайся",
+        f"{name}, ты опять здесь",
+        f"{name}, это было лишнее",
     ]
     return random.choice(variants)
 
@@ -182,6 +178,7 @@ async def maybe_reply(message: Message, bot: Bot):
     if not any(t in text for t in TRIGGERS):
         return
 
+    # альбом → один ответ
     mgid = message.media_group_id
     if mgid:
         if mgid in replied_media_groups:
@@ -227,7 +224,7 @@ async def maybe_reply(message: Message, bot: Bot):
         remember_girl(memory, message.text or message.caption)
         save_memory(memory)
         await asyncio.sleep(1)
-        await message.reply("у сука, я это запомню")
+        await message.reply("я это запомню")
 
     # ===== ТРОЛЛИНГ =====
     if random.random() < TROLL_PROB and memory:
@@ -239,9 +236,9 @@ async def maybe_reply(message: Message, bot: Bot):
     # ===== СЦЕНКА =====
     if random.random() < EXTRA_COMMENT_PROB:
         await asyncio.sleep(2)
-        await message.reply("Славный хер")
+        await message.reply("ой, да тут же всё плохо")
         await asyncio.sleep(3)
-        await message.reply("Славные яйца")
+        await message.reply("а нет, показалось")
 
 
 # ===== ОТВЕТ НА ОТВЕТ =====
@@ -260,24 +257,17 @@ async def reply_attack(message: Message, bot: Bot):
 
 async def main():
     if not TOKEN:
-        raise RuntimeError("Не задан BOT_TOKEN")
+        raise RuntimeError("Не задан TOKEN")
 
     bot = Bot(TOKEN)
     dp = Dispatcher()
 
-    dp.message.register(
-        lambda m: maybe_reply(m, bot),
-        (F.forward_date | F.forward_from | F.forward_from_chat),
-    )
+    dp.message.register(maybe_reply, F.text | F.caption)
+    dp.message.register(maybe_reply, F.forward_date | F.forward_from | F.forward_from_chat)
 
-    dp.message.register(
-        lambda m: maybe_reply(m, bot),
-        F.text | F.caption
-    )
+    dp.message.register(reply_attack)
 
-    dp.message.register(
-        lambda m: reply_attack(m, bot)
-    )
+    print("BOT STARTED")
 
     await dp.start_polling(bot)
 
