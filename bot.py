@@ -36,7 +36,7 @@ RECALL_PROB = 0.1
 
 MEMORY_FILE = "memory.json"
 
-REACTION_PROB = 0.07  # 7% шанс реакции
+REACTION_PROB = 0.04  # 4% шанс реакции
 
 # =====================
 
@@ -240,7 +240,7 @@ async def maybe_reply(message: Message, bot: Bot):
     # ===== ТРОЛЛИНГ =====
     if random.random() < TROLL_PROB and memory:
         user_id = random.choice(list(memory.keys()))
-        name = f"@user{str(user_id)[-4:]}"
+        name = message.from_user.first_name
         await asyncio.sleep(1)
         await message.reply(troll_text(name))
 
