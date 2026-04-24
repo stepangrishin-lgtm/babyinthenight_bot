@@ -169,10 +169,10 @@ def make_reply():
 
 def troll_text(name):
     variants = [
-        f"{name}, мда, жалкое зрелище",
-        f"{name}, не старайся",
-        f"{name}, мне и твоим родителям звонить?",
-        f"{name}, как же жидко ты всрался",
+        f"{name}, есть 100 рублей?",
+        f"{name}, с тобой перепутал",
+        f"{name}, вдул бы?",
+        f"{name}, на тебя похожа",
     ]
     return random.choice(variants)
 
@@ -247,9 +247,9 @@ async def maybe_reply(message: Message, bot: Bot):
     # ===== СЦЕНКА =====
     if random.random() < EXTRA_COMMENT_PROB:
         await asyncio.sleep(2)
-        await message.reply("ой, да тут же всё плохо")
+        await message.reply("Варгунин сильно планку поднял")
         await asyncio.sleep(3)
-        await message.reply("а нет, показалось")
+        await message.reply("а Леха её опустил")
 
 
 # ===== ОТВЕТ НА ОТВЕТ =====
