@@ -6,6 +6,7 @@ import json
 from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message
 from aiogram.enums import ChatAction
+from aiogram.types import ReactionTypeEmoji
 
 # ===== НАСТРОЙКИ =====
 
@@ -34,6 +35,8 @@ REMEMBER_PROB = 0.05
 RECALL_PROB = 0.1
 
 MEMORY_FILE = "memory.json"
+
+REACTION_PROB = 0.07  # 7% шанс реакции
 
 # =====================
 
@@ -254,6 +257,27 @@ async def reply_attack(message: Message, bot: Bot):
             await message.reply("А я вроде тебя и не спрашивал")
 
 
+async def random_reaction(message: Message):
+    if not message.from_user:
+        return
+
+    # не реагируем на себя
+    if message.from_user.is_bot:
+        return
+
+    if random.random() > REACTION_PROB:
+        return
+
+    emojis = ["💩", "🤡", "🔥"]
+
+    try:
+        await message.react([
+            ReactionTypeEmoji(emoji=random.choice(emojis))
+        ])
+    except:
+        pass  # если реакция не поддерживается — игнор
+
+
 # ===== MAIN =====
 
 async def main():
@@ -267,6 +291,7 @@ async def main():
     dp.message.register(maybe_reply, F.forward_date | F.forward_from | F.forward_from_chat)
 
     dp.message.register(reply_attack)
+    dp.message.register(random_reaction)
 
     print("BOT STARTED")
 
