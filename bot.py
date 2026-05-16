@@ -7,6 +7,7 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message
 from aiogram.enums import ChatAction
 from aiogram.types import ReactionTypeEmoji
+from aiogram.methods import SetMessageReaction
 
 # ===== НАСТРОЙКИ =====
 
@@ -238,12 +239,19 @@ async def maybe_reply(message: Message, bot: Bot):
         await asyncio.sleep(1)
         await message.reply("я это запомню")
 
-    # ===== ТРОЛЛИНГ =====
-    if random.random() < TROLL_PROB and memory:
-        user_id = random.choice(list(memory.keys()))
-        name = message.from_user.first_name
-        await asyncio.sleep(1)
-        await message.reply(troll_text(name))
+# ===== ТРОЛЛИНГ =====
+if random.random() < TROLL_PROB and message.from_user:
+    user = message.from_user
+
+    # настоящий тег пользователя
+    if user.username:
+        name = f"@{user.username}"
+    else:
+        name = user.first_name
+
+    await asyncio.sleep(1)
+
+    await message.reply(troll_text(name))
 
     # ===== СЦЕНКА =====
     if random.random() < EXTRA_COMMENT_PROB:
@@ -265,27 +273,38 @@ async def reply_attack(message: Message, bot: Bot):
             await message.reply("А я вроде тебя и не спрашивал")
 
 
-async def random_reaction(message: Message):
+async def random_reaction(message: Message, bot: Bot):
     if not message.from_user:
         return
 
-    # не реагируем на себя
+    # не реагируем на ботов
     if message.from_user.is_bot:
         return
 
+    # шанс реакции
     if random.random() > REACTION_PROB:
         return
 
     emojis = ["💩", "🤡", "🔥"]
 
+    # небольшая задержка для "живости"
+    await asyncio.sleep(random.uniform(0.5, 2))
+
     try:
-        await message.react([
-            ReactionTypeEmoji(emoji=random.choice(emojis))
-        ])
-    except:
-        pass  # если реакция не поддерживается — игнор
-
-
+        await bot(
+            SetMessageReaction(
+                chat_id=message.chat.id,
+                message_id=message.message_id,
+                reaction=[
+                    ReactionTypeEmoji(
+                        emoji=random.choice(emojis)
+                    )
+                ],
+                is_big=False
+            )
+        )
+    except Exception as e:
+        print("REACTION ERROR:", e)
 # ===== MAIN =====
 
 async def main():
@@ -296,7 +315,6 @@ async def main():
     dp = Dispatcher()
 
     dp.message.register(maybe_reply, F.text | F.caption)
-    dp.message.register(maybe_reply, F.forward_date | F.forward_from | F.forward_from_chat)
 
     dp.message.register(reply_attack)
     dp.message.register(random_reaction)
